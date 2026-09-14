@@ -1,0 +1,5 @@
+# Mac OS X config files
+.DS_Store
+
+# Ignore storage (uploaded files in development and any SQLite databases).
+/db/cache.*

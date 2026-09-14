@@ -1,0 +1,22 @@
+<h1>TV Schedule Timeline</h1>
+
+<!-- This is the container where all the timeline content will go -->
+<div id="timeline-container">
+  <!-- We are dynamically injecting the rows here -->
+  <div id="time-header">
+    <!-- Time labels (e.g., 7:00 AM, 7:59 AM, etc.) will go here -->
+    <div class="time-label"></div>
+    <div class="time-marker"></div>
+  </div>
+
+  <% @sorted_programmes.each do |channel_id, programmes| %>
+    <div class="channel-track">
+      <% programmes.each do |programme| %>
+        <div class="programme-block" style="width: <%= programme.duration_minutes * 2 %>px; left: <%= (programme.starts_at.hour * 60 + programme.starts_at.min) * 2 %>px;">
+          <%= programme.title %>
+          <%= programme.starts_at %> - <%= programme.ends_at %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

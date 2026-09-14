@@ -1,0 +1,45 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* 1. Main Container Setup */
+#timeline-container {
+  position: relative;
+  /* Set a fixed height that accommodates all channels + header */
+  height: 1000px;
+  border: 1px solid #ccc;
+}
+
+/* 2. Channel Row Setup (The vertical divisions) */
+.channel-track {
+  display: inline-flex;
+  /* Flex container helps us manage the overall horizontal spacing */
+  flex-direction: row;
+  border-bottom: 1px dotted #eee;
+  height: 80px;
+  /* Example height per channel */
+}
+
+/* 3. Individual Program Element (The dynamic blocks) */
+.programme-block {
+  position: relative;
+  /* Allows layering if needed */
+  background-color: #3498db;
+  /* Placeholder color */
+  /* border-right: 1px solid rgba(0, 0, 0, 0.1); */
+  color: white;
+  overflow: hidden;
+  /* Ensure content stays within the block */
+  white-space: nowrap;
+  /* padding: 0 5px; */
+  cursor: pointer;
+}
+
+/* Optional: Style for the time header */
+#time-header {
+  display: flex;
+  /* You will need to calculate the width distribution here too */
+  height: 50px;
+  background: #f9f9f9;
+  /* ... styling for time labels ... */
+}
