@@ -1,6 +1,6 @@
 require "sinatra"
 require "sinatra/activerecord"
-require "json"
+# require "json"
 
 require_relative "models/channel"
 require_relative "models/programme"
@@ -48,4 +48,10 @@ end
 
 get "/up" do
   "OK"
+end
+
+helpers do
+  def position_style(start_minutes, duration_minutes)
+    "left: #{start_minutes * 10}px; width: #{duration_minutes * 10}px;"
+  end
 end

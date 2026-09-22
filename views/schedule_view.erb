@@ -12,7 +12,7 @@
   <% @sorted_programmes.each do |channel_id, programmes| %>
     <div class="channel-track">
       <% programmes.each do |programme| %>
-        <div class="programme-block" style="width: <%= programme.duration_minutes * 2 %>px; left: <%= (programme.starts_at.hour * 60 + programme.starts_at.min) * 2 %>px;">
+        <div class="programme-block" style="<%= position_style(programme.start_minutes, programme.duration_minutes) %>">
           <%= programme.title %>
           <%= programme.starts_at %> - <%= programme.ends_at %>
         </div>

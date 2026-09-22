@@ -5,7 +5,11 @@ class Programme < ActiveRecord::Base
     @channel_name ||= channel&.name
   end
 
+  def start_minutes = starts_at.hour * 60 + starts_at.min
+
+  def end_minutes = ends_at.hour * 60 + ends_at.min
+
   def duration_minutes
-    @duration_minutes ||= ((ends_at - starts_at) / 60).to_i
+    (end_minutes > start_minutes) ? end_minutes - start_minutes : (24 * 60 - start_minutes) + end_minutes
   end
 end
