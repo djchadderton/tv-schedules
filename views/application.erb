@@ -3,12 +3,16 @@
     <title>TV Schedule</title>
     <link rel="stylesheet" href="/css/style.css">
   </head>
-  <body>
+  <body class="<%= 'dark-mode' if @dark_mode %><%= 'light-mode' if @light_mode %>">
     <header>
       <h1>TV Schedule</h1>
+      <a class="theme-toggle" href="<%= schedule_path(theme: @dark_mode ? 'light' : 'dark') %>">
+        <%= @dark_mode ? "Light mode" : "Dark mode" %>
+      </a>
     </header>
     <main>
       <%= yield %>
     </main>
+    <script src="/timeline.js"></script>
   </body>
 </html>

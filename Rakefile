@@ -10,10 +10,11 @@ task :build do
   system "docker build . -t app && docker run -it --rm -p 3000:3000 app"
 end
 
-desc "Fetches the EPG data and stores it in the database"
+desc "Fetches the EPG data, stores it, and removes old programmes"
 task :fetch_epg do
   require "./schedule"
-  Schedule.new
+  schedule = Schedule.new.import!
+  puts "Imported #{schedule.channels.size} channels and #{schedule.programmes.size} programmes; removed #{schedule.removed_programmes} old programmes."
 end
 
 namespace :db do

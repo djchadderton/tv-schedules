@@ -1,22 +1,76 @@
-<h1>TV Schedule Timeline</h1>
-
-<!-- This is the container where all the timeline content will go -->
-<div id="timeline-container">
-  <!-- We are dynamically injecting the rows here -->
-  <div id="time-header">
-    <!-- Time labels (e.g., 7:00 AM, 7:59 AM, etc.) will go here -->
-    <div class="time-label"></div>
-    <div class="time-marker"></div>
+<section class="schedule-page" aria-labelledby="schedule-title">
+  <div class="schedule-heading">
+    <div>
+      <p class="eyebrow">Freeview listings</p>
+      <h1 id="schedule-title"><%= @schedule_date == Date.today ? "Today's schedule" : @schedule_date.strftime("%-d %B schedule") %></h1>
+    </div>
+    <div class="schedule-controls">
+      <% if @schedule_date > Date.today %>
+        <a class="day-link" href="<%= schedule_path(date: @schedule_date - 1) %>" aria-label="Previous day">&larr;</a>
+      <% else %>
+        <span class="day-link day-link-disabled" aria-disabled="true" aria-label="Previous day">&larr;</span>
+      <% end %>
+      <p class="schedule-date"><%= @schedule_date.strftime("%A, %-d %B") %></p>
+      <% if @schedule_date < @last_schedule_date %>
+        <a class="day-link" href="<%= schedule_path(date: @schedule_date + 1) %>" aria-label="Next day">&rarr;</a>
+      <% else %>
+        <span class="day-link day-link-disabled" aria-disabled="true" aria-label="Next day">&rarr;</span>
+      <% end %>
+      <a class="now-link" href="<%= schedule_path(date: Date.today) %>" aria-label="Jump to the current date and time">Now</a>
+    </div>
   </div>
 
-  <% @sorted_programmes.each do |channel_id, programmes| %>
-    <div class="channel-track">
-      <% programmes.each do |programme| %>
-        <div class="programme-block" style="<%= position_style(programme.start_minutes, programme.duration_minutes) %>">
-          <%= programme.title %>
-          <%= programme.starts_at %> - <%= programme.ends_at %>
+  <div class="schedule-scroll" tabindex="0" aria-label="TV schedule, horizontally scrollable">
+    <div class="schedule-canvas">
+      <div class="timeline-header">
+        <div class="channel-heading">Channel</div>
+        <div class="time-axis" aria-hidden="true">
+          <% if current_minutes %>
+            <div class="current-time-line" style="<%= current_time_style %>"></div>
+          <% end %>
+          <% (0..23).each do |hour| %>
+            <div class="time-tick" style="left: <%= hour * 180 %>px;">
+              <span><%= format("%02d:00", hour) %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <% @schedule_rows.each do |row| %>
+        <div class="schedule-row">
+          <div class="channel-label">
+            <% if row[:channel] %>
+              <strong><%= row[:channel].name %></strong>
+              <span><%= row[:channel].channel_id %></span>
+            <% else %>
+              <strong><%= row[:channel_id] %></strong>
+            <% end %>
+          </div>
+          <div class="programme-track">
+            <% if current_minutes %>
+              <div class="current-time-line" style="<%= current_time_style %>" aria-hidden="true"></div>
+            <% end %>
+            <% row[:programmes].each do |programme| %>
+              <article class="programme <%= 'programme-ended' if programme_ended?(programme) %>" style="<%= programme_position_style(programme) %>">
+                <button class="programme-trigger" type="button" aria-expanded="false">
+                  <strong><%= programme.title %></strong>
+                  <span><%= programme.local_starts_at.strftime("%H:%M") %>–<%= programme.local_ends_at&.strftime("%H:%M") || "" %></span>
+                </button>
+                <div class="programme-popover">
+                  <strong><%= programme.title %></strong>
+                  <span><%= programme.local_starts_at.strftime("%H:%M") %>–<%= programme.local_ends_at&.strftime("%H:%M") || "" %></span>
+                  <% if programme.description %>
+                    <p><%= programme.description %></p>
+                  <% end %>
+                  <% if programme.series || programme.episode %>
+                    <small>Series <%= programme.series || "-" %>, episode <%= programme.episode || "-" %></small>
+                  <% end %>
+                </div>
+              </article>
+            <% end %>
+          </div>
         </div>
       <% end %>
     </div>
-  <% end %>
-</div>
+  </div>
+</section>

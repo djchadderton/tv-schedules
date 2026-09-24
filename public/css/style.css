@@ -1,45 +1,417 @@
+:root {
+  --ink: #19232d;
+  --muted: #687786;
+  --line: #dbe2e7;
+  --paper: #f7f9fa;
+  --accent: #e45f3f;
+  --channel-width: 190px;
+  --minute-width: 3px;
+  --timeline-width: 4320px;
+}
+
+body.dark-mode {
+  --ink: #edf2f4;
+  --muted: #aab8c1;
+  --line: #35434d;
+  --paper: #11181d;
+  --accent: #ff8b68;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-mode) {
+    --ink: #edf2f4;
+    --muted: #aab8c1;
+    --line: #35434d;
+    --paper: #11181d;
+    --accent: #ff8b68;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
 }
 
-/* 1. Main Container Setup */
-#timeline-container {
-  position: relative;
-  /* Set a fixed height that accommodates all channels + header */
-  height: 1000px;
-  border: 1px solid #ccc;
+header {
+  padding: 18px 5vw;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
 }
 
-/* 2. Channel Row Setup (The vertical divisions) */
-.channel-track {
-  display: inline-flex;
-  /* Flex container helps us manage the overall horizontal spacing */
-  flex-direction: row;
-  border-bottom: 1px dotted #eee;
-  height: 80px;
-  /* Example height per channel */
+.dark-mode header,
+.dark-mode .schedule-scroll,
+.dark-mode .timeline-header,
+.dark-mode .channel-heading,
+.dark-mode .channel-label {
+  background: #1b252c;
 }
 
-/* 3. Individual Program Element (The dynamic blocks) */
-.programme-block {
-  position: relative;
-  /* Allows layering if needed */
-  background-color: #3498db;
-  /* Placeholder color */
-  /* border-right: 1px solid rgba(0, 0, 0, 0.1); */
-  color: white;
-  overflow: hidden;
-  /* Ensure content stays within the block */
-  white-space: nowrap;
-  /* padding: 0 5px; */
-  cursor: pointer;
+@media (prefers-color-scheme: dark) {
+
+  body:not(.light-mode) header,
+  body:not(.light-mode) .schedule-scroll,
+  body:not(.light-mode) .timeline-header,
+  body:not(.light-mode) .channel-heading,
+  body:not(.light-mode) .channel-label {
+    background: #1b252c;
+  }
 }
 
-/* Optional: Style for the time header */
-#time-header {
+.theme-toggle, .day-link {
+  color: var(--ink);
+  font: 700 .72rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-decoration: none;
+}
+
+.theme-toggle {
+  float: right;
+  margin-top: -18px;
+}
+
+.theme-toggle:hover, .day-link:hover {
+  color: var(--accent);
+}
+
+.day-link-disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}
+
+.day-link-disabled:hover {
+  color: var(--ink);
+}
+
+.now-link {
+  padding: 8px 12px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font: 700 .72rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-decoration: none;
+}
+
+.now-link:hover {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+main {
+  padding: 42px 5vw 64px;
+}
+
+.schedule-heading {
   display: flex;
-  /* You will need to calculate the width distribution here too */
-  height: 50px;
-  background: #f9f9f9;
-  /* ... styling for time labels ... */
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.eyebrow, .schedule-date, .channel-label span, .programme span {
+  color: var(--muted);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.schedule-heading h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.schedule-date {
+  margin: 0 0 5px;
+  font-size: .9rem;
+}
+
+.schedule-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.day-link {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 1rem;
+}
+
+.schedule-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(25, 35, 45, .08);
+}
+
+.schedule-canvas {
+  width: calc(var(--channel-width) + var(--timeline-width));
+  min-width: 100%;
+}
+
+.timeline-header, .schedule-row {
+  display: grid;
+  grid-template-columns: var(--channel-width) var(--timeline-width);
+}
+
+.timeline-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 52px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.channel-heading, .channel-label {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  border-right: 1px solid var(--line);
+  background: #fff;
+}
+
+.channel-heading {
+  padding: 17px 18px;
+  color: var(--muted);
+  font: 700 .68rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.time-axis {
+  position: relative;
+  width: var(--timeline-width);
+  background: repeating-linear-gradient(90deg, transparent 0 179px, var(--line) 179px 180px);
+}
+
+.time-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  border-left: 1px solid var(--line);
+}
+
+.time-tick span {
+  position: absolute;
+  top: 17px;
+  left: 8px;
+  color: var(--muted);
+  font: 700 .7rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.schedule-row {
+  min-height: 86px;
+  border-bottom: 1px solid var(--line);
+}
+
+.schedule-row:last-child {
+  border-bottom: 0;
+}
+
+.channel-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 18px;
+}
+
+.channel-label strong {
+  overflow: hidden;
+  font-size: .98rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel-label span {
+  overflow: hidden;
+  font-size: .68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.programme-track {
+  position: relative;
+  min-height: 86px;
+  overflow: hidden;
+  background: repeating-linear-gradient(90deg, transparent 0 179px, rgba(219, 226, 231, .65) 179px 180px);
+}
+
+.current-time-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 4;
+  width: 2px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.time-axis .current-time-line {
+  top: 0;
+  bottom: 0;
+}
+
+.programme {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  min-width: 0;
+  z-index: 1;
+  color: var(--ink);
+}
+
+.programme-trigger {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border: 0;
+  border-left: 3px solid var(--accent);
+  background: #fff3ed;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.programme-trigger strong, .programme-trigger span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.programme-trigger strong {
+  font-size: .86rem;
+  font-weight: 700;
+}
+
+.programme-trigger span {
+  color: var(--muted);
+  font: .7rem -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.dark-mode .programme-trigger {
+  background: #283943;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-mode) .programme-trigger {
+    background: #283943;
+  }
+}
+
+.programme-ended {
+  opacity: .48;
+}
+
+.programme-ended:hover, .programme-ended:focus-within, .programme.is-open {
+  opacity: 1;
+}
+
+.programme:hover, .programme:focus-within, .programme.is-open {
+  z-index: 5;
+}
+
+.programme-popover {
+  position: fixed;
+  top: var(--popover-top, 0px);
+  left: var(--popover-left, 0px);
+  width: 260px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .2);
+}
+
+.programme-popover strong, .programme-popover span, .programme-popover small {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.programme-popover strong {
+  margin-bottom: 6px;
+  font-size: .9rem;
+}
+
+.programme-popover span, .programme-popover small {
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.programme-popover p {
+  margin: 12px 0 0;
+  font-size: .86rem;
+  line-height: 1.4;
+}
+
+.programme-popover small {
+  margin-top: 12px;
+}
+
+.programme:not(.is-open) .programme-popover {
+  display: none;
+}
+
+.programme.is-open .programme-popover {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  main {
+    padding: 28px 16px 48px;
+  }
+
+  header {
+    padding: 16px;
+  }
+
+  .schedule-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .schedule-heading h1 {
+    font-size: 2.25rem;
+  }
+
+  .channel-heading, .channel-label {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
 }

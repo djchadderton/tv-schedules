@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_12_111628) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_23_120000) do
   create_table "channels", force: :cascade do |t|
     t.string "channel_id"
     t.string "icon"
     t.string "name"
+    t.index ["channel_id"], name: "index_channels_on_channel_id", unique: true
   end
 
   create_table "programmes", force: :cascade do |t|
@@ -27,5 +28,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_111628) do
     t.integer "series"
     t.datetime "starts_at"
     t.string "title"
+    t.index ["channel_id", "starts_at"], name: "index_programmes_on_channel_id_and_starts_at", unique: true
   end
 end

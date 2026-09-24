@@ -10,9 +10,40 @@ class Schedule
   attr_reader :channels, :programmes
   URL = URI("https://raw.githubusercontent.com/dp247/Freeview-EPG/master/epg.xml").freeze
 
-  def initialize
-    load_channels
-    load_programmes
+  def initialize(xml: nil)
+    @xml = xml
+  end
+
+  def import!
+    parsed_channels = parse_channels
+    parsed_programmes = parse_programmes
+
+    ActiveRecord::Base.transaction do
+      @channels = parsed_channels.map do |attributes|
+        channel = Channel.find_or_initialize_by(channel_id: attributes[:channel_id])
+        channel.assign_attributes(attributes)
+        channel.save!
+        channel
+      end
+
+      @programmes = parsed_programmes.map do |attributes|
+        programme = Programme.find_or_initialize_by(
+          channel_id: attributes[:channel_id],
+          starts_at: attributes[:starts_at]
+        )
+        programme.assign_attributes(attributes)
+        programme.save!
+        programme
+      end
+
+      @removed_programmes = Programme.where("ends_at < ?", Time.now.beginning_of_day).delete_all
+    end
+
+    self
+  end
+
+  def removed_programmes
+    @removed_programmes || 0
   end
 
   def xml
@@ -23,31 +54,41 @@ class Schedule
     @doc ||= Nokogiri::XML(xml) { |config| config.strict.nonet }
   end
 
-  def load_channels
-    @channels = []
-    doc.xpath("//channel").each do |channel|
-      Channel.find_or_create_by(channel_id: channel["id"]) do |c|
-        c.name = channel.at_xpath("./display-name")&.text&.strip
-        c.icon = channel.at_xpath("./icon")&.[]("src")
-      end
+  private
+
+  def parse_channels
+    doc.xpath("//channel").map do |channel|
+      {
+        channel_id: channel["id"],
+        name: text_at(channel, "./display-name"),
+        icon: channel.at_xpath("./icon")&.[]("src")
+      }
     end
   end
 
-  def load_programmes
-    @programmes = []
+  def parse_programmes
+    doc.xpath("//programme").map do |programme|
+      series, episode = /S(\d*)E(\d*)/.match(text_at(programme, "./episode-num[@system='onscreen']"))&.captures
 
-    doc.xpath("//programme").each do |programme|
-      series, episode = /S(\d*)E(\d*)/.match(programme.at_xpath("./episode-num[@system='onscreen']"))&.captures
-
-      Programme.find_or_create_by(title: programme.at_xpath("./title")&.text&.strip, channel_id: programme["channel"], starts_at: programme["start"]) do |p|
-        p.icon = programme.at_xpath("./icon")&.[]("src")
-        p.description = programme.at_xpath("./desc")&.text&.strip
-        p.starts_at = Time.strptime(programme["start"], "%Y%m%d%H%M%S %z")
-        p.ends_at = programme["stop"] && Time.strptime(programme["stop"], "%Y%m%d%H%M%S %z")
-        p.series = series&.to_i
-        p.episode = episode&.to_i
-        p.premiere = programme.at_xpath("./premiere")
-      end
+      {
+        title: text_at(programme, "./title"),
+        channel_id: programme["channel"],
+        icon: programme.at_xpath("./icon")&.[]("src"),
+        description: text_at(programme, "./desc"),
+        starts_at: parse_time(programme["start"]),
+        ends_at: programme["stop"] && parse_time(programme["stop"]),
+        series: series&.to_i,
+        episode: episode&.to_i,
+        premiere: !programme.at_xpath("./premiere").nil?
+      }
     end
+  end
+
+  def text_at(node, xpath)
+    node.at_xpath(xpath)&.text&.strip
+  end
+
+  def parse_time(value)
+    Time.strptime(value, "%Y%m%d%H%M%S %z")
   end
 end

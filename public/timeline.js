@@ -1,102 +1,112 @@
 document.addEventListener("DOMContentLoaded", () => {
-  if (!scheduleData || scheduleData.length === 0) {
-    console.log("No schedule data found.")
-    return
+  const schedule = document.querySelector(".schedule-scroll")
+  const currentLine = document.querySelector(".time-axis .current-time-line")
+  const programmes = [...document.querySelectorAll(".programme")]
+  const nowLink = document.querySelector(".now-link")
+
+  const centerOnCurrentTime = () => {
+    if (!schedule || !currentLine) return false
+
+    schedule.scrollTo({
+      left: Math.max(0, currentLine.offsetLeft - schedule.clientWidth / 2),
+      behavior: "smooth"
+    })
+    return true
   }
 
-  const container = document.getElementById("timeline-container")
-  let currentOffset = 0 // Tracks the cumulative start time offset
+  const closeProgramme = (programme) => {
+    programme.classList.remove("is-open")
+    programme.dataset.pinned = "false"
+    programme
+      .querySelector(".programme-trigger")
+      ?.setAttribute("aria-expanded", "false")
+  }
 
-  // 1. Group programmes by channel first to create the row structure
-  const channels = {}
-  scheduleData.forEach((programme) => {
-    const parsed_programme = JSON.parse(programme)
-    const channel = parsed_programme.channel_name
-    if (!channels[channel]) {
-      channels[channel] = []
-    }
-    channels[channel].push(parsed_programme)
+  const closeOtherProgrammes = (current) => {
+    programmes.forEach((programme) => {
+      if (programme !== current) closeProgramme(programme)
+    })
+  }
+
+  centerOnCurrentTime()
+
+  nowLink?.addEventListener("click", (event) => {
+    if (centerOnCurrentTime()) event.preventDefault()
   })
 
-  Object.keys(channels)
-    .sort()
-    .forEach((channelName) => {
-      const sortedPrograms = channels[channelName].sort((a, b) => {
-        // Sort by start time string comparison (assuming consistent format like HH:MM)
-        return a.starts_at.localeCompare(b.starts_at)
-      })
+  programmes.forEach((programme) => {
+    const popover = programme.querySelector(".programme-popover")
+    const trigger = programme.querySelector(".programme-trigger")
+    if (!popover) return
 
-      // 2. Create the channel track row
-      const trackRow = document.createElement("div")
-      trackRow.className = "channel-track"
-      trackRow.setAttribute("data-channel", channelName)
+    const positionPopover = () => {
+      const bounds = programme.getBoundingClientRect()
+      const minimumLeft = schedule.getBoundingClientRect().left + 202
+      const left = Math.min(
+        bounds.left,
+        window.innerWidth - popover.offsetWidth - 12
+      )
+      const top =
+        bounds.bottom + 8 + popover.offsetHeight <= window.innerHeight
+          ? bounds.bottom + 8
+          : bounds.top - popover.offsetHeight - 8
+      programme.style.setProperty(
+        "--popover-left",
+        `${Math.max(minimumLeft, left, 12)}px`
+      )
+      programme.style.setProperty("--popover-top", `${Math.max(12, top)}px`)
+    }
 
-      let channelOffset = 0 // Reset offset for this new channel track
+    const activateProgramme = () => {
+      const willOpen = !programme.classList.contains("is-open")
+      programme.dataset.pinned = willOpen ? "true" : "false"
+      window.setTimeout(() => {
+        closeOtherProgrammes(programme)
+        programme.classList.toggle("is-open", willOpen)
+        programme.dataset.pinned = willOpen ? "true" : "false"
+        trigger.setAttribute("aria-expanded", String(willOpen))
+        if (willOpen) requestAnimationFrame(positionPopover)
+      }, 0)
+    }
 
-      sortedPrograms.forEach((programme) => {
-        // --- CORE CALCULATIONS ---
-
-        // A. Calculate the exact start time (offset)
-        // This requires converting time strings (H:M) into minutes/pixels.
-        // For simplicity, let's assume a function `timeToOffset` exists:
-        const startMinutes = timeToMinutes(programme.starts_at)
-        const startOffset = calculatePixelOffset(startMinutes, channelOffset)
-
-        // B. Calculate the duration width
-        const endMinutes = timeToMinutes(programme.ends_at)
-
-        const durationMinutes = () => {
-          if (endMinutes < startMinutes) {
-            return 24 * 60 - startMinutes + endMinutes // Wrap around midnight
-          } else {
-            return endMinutes - startMinutes
-          }
-        }
-        const width = calculatePixelWidth(durationMinutes)
-
-        // C. Create the program block element
-        const block = document.createElement("div")
-        block.className = "program-block"
-        block.textContent = `${programme.title} (${programme.starts_at} - ${programme.ends_at})`
-
-        // D. Apply the calculated CSS properties
-        block.style.left = `${startOffset}px`
-        block.style.width = `${width}px`
-
-        trackRow.appendChild(block)
-
-        // E. Update tracker
-        channelOffset += width
-      })
-
-      container.appendChild(trackRow)
+    trigger.addEventListener("pointerdown", (event) => {
+      event.preventDefault()
+      trigger.dataset.pointerActivated = "true"
+      activateProgramme()
     })
+    trigger.addEventListener("click", () => {
+      if (trigger.dataset.pointerActivated === "true") {
+        delete trigger.dataset.pointerActivated
+        return
+      }
+
+      activateProgramme()
+    })
+    programme.addEventListener("pointerenter", () => {
+      closeOtherProgrammes(programme)
+      programme.classList.add("is-open")
+      trigger.setAttribute("aria-expanded", "true")
+      requestAnimationFrame(positionPopover)
+    })
+    programme.addEventListener("pointerleave", () => {
+      if (programme.dataset.pinned !== "true") closeProgramme(programme)
+    })
+    programme.addEventListener("focusin", () => {
+      closeOtherProgrammes(programme)
+      programme.classList.add("is-open")
+      trigger.setAttribute("aria-expanded", "true")
+      requestAnimationFrame(positionPopover)
+    })
+    schedule?.addEventListener("scroll", () => {
+      if (programme.classList.contains("is-open")) positionPopover()
+    })
+    window.addEventListener("resize", positionPopover)
+  })
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".programme")) programmes.forEach(closeProgramme)
+  })
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") programmes.forEach(closeProgramme)
+  })
 })
-/**
- * NOTE: The functions below are placeholders. You MUST implement the logic
- * to convert time strings (H:M) into a quantifiable unit (minutes from the day's start)
- * and relate that unit to pixel/percentage dimensions.
- *
- * 1. timeToMinutes: Converts "19:30" to 1170 (minutes from midnight)
- * 2. calculatePixelOffset: Takes the absolute start minute and converts it to 'left' pixels.
- * 3. calculatePixelWidth: Takes the duration in minutes and converts it to 'width' pixels.
- */
-function timeToMinutes(timeStr) {
-  // Logic to parse "HH:MM" to total minutes
-  // e.g., '19:30' -> 1170
-  const [hours, minutes, _] = timeStr.split("T")[1].split(":").map(Number)
-  return hours * 60 + minutes
-}
-
-function calculatePixelOffset(minutesFromMidnight, channelStartOffset) {
-  // 1. Determine the total time span (e.g., 12 hours * 60 minutes = 720 minutes)
-  // 2. Calculate the percentage or pixel count for the given minutes.
-  // Example: Assuming 1 hour = 100 pixels, offset = (minutes / 60) * 100
-  return (minutesFromMidnight / 720) * 100 // If using percentages
-  // return "0px" // Placeholder
-}
-
-function calculatePixelWidth(durationMinutes) {
-  // Example: Assuming 1 minute = 10 pixels.
-  return durationMinutes * 10
-}
