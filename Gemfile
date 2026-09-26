@@ -17,4 +17,4 @@ gem "sinatra-activerecord", "~> 2.0"
 gem "rake", "~> 13.4"
 gem "whenever", "~> 1.0"
 
-gem "standardrb", "~> 1.0"
+gem "standardrb"
