@@ -11,6 +11,7 @@ ENV BUNDLE_WITHOUT="development" \
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   build-essential \
+  cron \
   libsqlite3-dev \
   pkg-config \
   sqlite3 \
