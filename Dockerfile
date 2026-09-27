@@ -22,6 +22,9 @@ RUN bundle config set --local without 'development' \
 
 COPY . .
 
+RUN chmod +x ./bin/docker-entrypoint.sh
+
 EXPOSE 9292
 
+ENTRYPOINT ["./bin/docker-entrypoint.sh"]
 CMD ["bundle", "exec", "rackup", "-o", "0.0.0.0", "-p", "9292"]

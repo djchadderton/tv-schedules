@@ -19,6 +19,11 @@ proxy:
   host: tv-schedule.chadderton.org
   ssl: false
 
+aliases:
+  console: app exec --interactive --reuse "irb -r app.rb"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+
 volumes:
   - tv-schedules-db:/app/db
 
