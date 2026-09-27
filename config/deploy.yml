@@ -26,9 +26,9 @@ env:
   clear:
     RACK_ENV: production
     PORT: "9292"
-  secret:
-    - APP_SECRET
-    - GITHUB_TOKEN
+  # secret:
+  #   - APP_SECRET
+  #   - GITHUB_TOKEN
 
 # healthcheck:
 #   path: /up
