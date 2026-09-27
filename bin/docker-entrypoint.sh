@@ -3,14 +3,10 @@ set -euo pipefail
 
 export RACK_ENV="${RACK_ENV:-production}"
 cd /app
+mkdir -p db
 
-if [ ! -f db/production.sqlite3 ]; then
-  echo "Initializing SQLite database..."
-  bundle exec rake db:create db:schema:load RACK_ENV=production
-else
-  echo "Running database migrations..."
-  bundle exec rake db:migrate RACK_ENV=production
-fi
+echo "Preparing database..."
+bundle exec rake db:prepare RACK_ENV=production
 
 bundle exec whenever --update-crontab
 
