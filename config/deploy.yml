@@ -20,8 +20,8 @@ proxy:
   ssl: false
 
 aliases:
-  console: app exec --interactive --reuse "cd /app && irb -r ./app.rb"
-  shell: app exec --interactive --reuse "cd /app && bash"
+  console: app exec --interactive --reuse "bash -lc 'cd /app && bundle exec irb -r ./app.rb'"
+  shell: app exec --interactive --reuse "bash -lc 'cd /app && bash'"
   logs: app logs -f
 
 volumes:
