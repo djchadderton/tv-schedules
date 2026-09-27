@@ -20,7 +20,8 @@ proxy:
   ssl: false
 
 aliases:
-  console: app exec --interactive --reuse "bash -lc 'cd /app && bundle exec ruby -I. -e \"require \"\"./app\"\"; require \"\"irb\"\"; IRB.start\"'"
+  console: app exec --interactive --reuse "bash -lc '/app/bin/app-console'"
+  stats: app exec --interactive --reuse "bash -lc 'cd /app && bundle exec ruby -I. -e \"require \\\"./app\\\"; puts \\\"channels=#{Channel.count}\\\"; puts \\\"programmes=#{Programme.count}\\\"\"'"
   shell: app exec --interactive --reuse "bash -lc 'cd /app && bash'"
   logs: app logs -f
 

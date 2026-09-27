@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /app
+bundle exec ruby -I. -r "./app" -r "irb" -e 'IRB.start'
