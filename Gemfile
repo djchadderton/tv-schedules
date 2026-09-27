@@ -17,6 +17,8 @@ gem "sinatra-activerecord", "~> 2.0"
 gem "rake", "~> 13.4"
 gem "whenever", "~> 1.0"
 
+gem "irb", "~> 1.16"
+
 gem "standardrb", "<= 1.31"
 
 gem "kamal", require: false
