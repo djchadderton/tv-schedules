@@ -19,6 +19,6 @@ gem "whenever", "~> 1.0"
 
 gem "irb", "~> 1.16"
 
-gem "standardrb", "<= 1.31"
+gem "standard", ">= 1.35.1"
 
 gem "kamal", require: false
