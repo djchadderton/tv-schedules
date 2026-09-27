@@ -1,0 +1,25 @@
+# See https://docs.docker.com/engine/reference/builder/#dockerignore-file for more about ignoring files.
+
+# Ignore git directory.
+/.git/
+/.gitignore
+
+# Ignore all environment files.
+/.env*
+
+# Ignore storage (uploaded files in development and any SQLite databases).
+/db/cache.*
+
+# Ignore CI service files.
+/.github
+
+# Ignore Kamal files.
+/config/deploy*.yml
+/.kamal
+
+# Ignore Docker-related files
+/.dockerignore
+/Dockerfile*
+
+# Mac OS X config files
+.DS_Store
