@@ -166,7 +166,7 @@ DEPENDENCIES
   sinatra (~> 4.2)
   sinatra-activerecord (~> 2.0)
   sqlite3 (~> 2.9)
-  standardrb
+  standardrb (<= 1.31)
   whenever (~> 1.0)
 
 CHECKSUMS
