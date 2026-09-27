@@ -78,6 +78,27 @@ To install the cron job:
 bundle exec whenever --update-crontab
 ```
 
+## Deployment with Kamal 2
+
+The repository includes a Kamal configuration in `config/deploy.yml` for deployment to the Raspberry Pi at `192.168.0.33` using a built-in registry.
+
+Before deploying, set the required environment variables:
+
+```bash
+export GITHUB_USERNAME=your-github-user
+export GITHUB_TOKEN=your-github-personal-access-token
+export APP_SECRET=some-long-random-secret
+```
+
+Then run:
+
+```bash
+kamal setup
+kamal deploy
+```
+
+This builds an ARM64 image for the target Pi, pushes it to the configured registry, deploys the app, and persists the SQLite database in the Docker volume configured under `config/deploy.yml`.
+
 ## Project structure
 
 - `app.rb` – Sinatra routes and schedule view logic

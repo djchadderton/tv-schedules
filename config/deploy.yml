@@ -1,0 +1,54 @@
+service: tv-schedules
+image: tv-schedules
+
+servers:
+  web:
+    - 192.168.0.33
+
+registry:
+  server: localhost:5555
+
+builder:
+  arch: arm64
+  context: .
+  dockerfile: Dockerfile
+  # remote: ssh://pi@192.168.0.33
+
+proxy:
+  app_port: 9292
+  host: tv-schedule.chadderton.org
+  ssl: false
+
+volumes:
+  - tv-schedules-db:/app/db
+
+env:
+  clear:
+    RACK_ENV: production
+    PORT: "9292"
+  secret:
+    - APP_SECRET
+    - GITHUB_TOKEN
+
+# healthcheck:
+#   path: /up
+#   port: 9292
+#   interval: 10
+#   timeout: 5
+
+# Use a different ssh user than root
+ssh:
+  user: djchadderton
+
+# Kamal 2 expects the SSH user to exist on the target machine.
+# Example:
+#   ssh pi@192.168.0.33
+#
+# Required environment variables before deploy:
+#   export GITHUB_USERNAME=your-github-user
+#   export GITHUB_TOKEN=your-github-personal-access-token
+#   export APP_SECRET=some-long-random-secret
+#
+# Then run:
+#   kamal setup
+#   kamal deploy
