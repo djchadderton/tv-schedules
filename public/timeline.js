@@ -3,12 +3,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const currentLine = document.querySelector(".time-axis .current-time-line")
   const programmes = [...document.querySelectorAll(".programme")]
   const nowLink = document.querySelector(".now-link")
+  const page = document.querySelector(".schedule-page")
+  const timeLines = [...document.querySelectorAll(".current-time-line")]
+
+  const browserDate = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, "0")
+    const day = String(now.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  }
+
+  const updateClock = () => {
+    const now = new Date()
+    const isCurrentDay = page?.dataset.scheduleDate === browserDate()
+    const minutes = now.getHours() * 60 + now.getMinutes()
+
+    timeLines.forEach((line) => {
+      line.hidden = !isCurrentDay
+      if (isCurrentDay) line.style.left = `${minutes * 3}px`
+    })
+
+    if (nowLink) {
+      const currentUrl = new URL(nowLink.href)
+      currentUrl.searchParams.set("date", browserDate())
+      nowLink.href = currentUrl.toString()
+    }
+  }
 
   const centerOnCurrentTime = () => {
-    if (!schedule || !currentLine) return false
+    if (!schedule || !currentLine || currentLine.hidden) return false
 
+    const linePosition =
+      currentLine.getBoundingClientRect().left -
+      schedule.getBoundingClientRect().left +
+      schedule.scrollLeft
     schedule.scrollTo({
-      left: Math.max(0, currentLine.offsetLeft - schedule.clientWidth / 2),
+      left: Math.max(0, linePosition - schedule.clientWidth / 2),
       behavior: "smooth"
     })
     return true
@@ -28,11 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
+  updateClock()
   centerOnCurrentTime()
+  window.setInterval(updateClock, 15_000)
 
-  nowLink?.addEventListener("click", (event) => {
-    if (centerOnCurrentTime()) event.preventDefault()
-  })
+  nowLink?.addEventListener("click", updateClock)
 
   programmes.forEach((programme) => {
     const popover = programme.querySelector(".programme-popover")

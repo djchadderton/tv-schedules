@@ -1,4 +1,4 @@
-<section class="schedule-page" aria-labelledby="schedule-title">
+<section class="schedule-page" aria-labelledby="schedule-title" data-schedule-date="<%= @schedule_date.iso8601 %>">
   <div class="schedule-heading">
     <div>
       <p class="eyebrow">Freeview listings</p>
@@ -25,9 +25,7 @@
       <div class="timeline-header">
         <div class="channel-heading">Channel</div>
         <div class="time-axis" aria-hidden="true">
-          <% if current_minutes %>
-            <div class="current-time-line" style="<%= current_time_style %>"></div>
-          <% end %>
+          <div class="current-time-line" hidden></div>
           <% (0..23).each do |hour| %>
             <div class="time-tick" style="left: <%= hour * 180 %>px;">
               <span><%= format("%02d:00", hour) %></span>
@@ -47,9 +45,7 @@
             <% end %>
           </div>
           <div class="programme-track">
-            <% if current_minutes %>
-              <div class="current-time-line" style="<%= current_time_style %>" aria-hidden="true"></div>
-            <% end %>
+            <div class="current-time-line" hidden aria-hidden="true"></div>
             <% row[:programmes].each do |programme| %>
               <article class="programme <%= 'programme-ended' if programme_ended?(programme) %>" style="<%= programme_position_style(programme) %>">
                 <button class="programme-trigger" type="button" aria-expanded="false">

@@ -32,6 +32,7 @@ env:
   clear:
     RACK_ENV: production
     PORT: "9292"
+    TZ: Europe/London
   # secret:
   #   - APP_SECRET
   #   - GITHUB_TOKEN

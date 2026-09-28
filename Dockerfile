@@ -6,7 +6,8 @@ WORKDIR /app
 ENV BUNDLE_WITHOUT="development" \
   BUNDLE_PATH="/usr/local/bundle" \
   RACK_ENV=production \
-  PORT=9292
+  PORT=9292 \
+  TZ=Europe/London
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -15,6 +16,7 @@ RUN apt-get update \
   libsqlite3-dev \
   pkg-config \
   sqlite3 \
+  tzdata \
   && rm -rf /var/lib/apt/lists/*
 
 COPY Gemfile Gemfile.lock ./
