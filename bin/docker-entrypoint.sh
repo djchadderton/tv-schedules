@@ -8,7 +8,8 @@ mkdir -p db
 echo "Preparing database..."
 bundle exec rake db:prepare RACK_ENV=production
 
-bundle exec whenever --update-crontab
+echo "Updating production cron schedule..."
+bundle exec whenever --update-crontab --set environment=production
 
 if command -v cron >/dev/null 2>&1; then
   if ! pgrep -x cron >/dev/null 2>&1; then
